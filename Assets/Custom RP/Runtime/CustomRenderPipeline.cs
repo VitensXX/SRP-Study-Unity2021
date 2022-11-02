@@ -5,6 +5,10 @@ public class CustomRenderPipeline : RenderPipeline
 {
     CameraRenderer renderer = new CameraRenderer();
 
+    public CustomRenderPipeline () {
+		GraphicsSettings.useScriptableRenderPipelineBatching = true;
+	}
+    
     protected override void Render(ScriptableRenderContext context, Camera[] cameras)
     {
         int length = cameras.Length;
