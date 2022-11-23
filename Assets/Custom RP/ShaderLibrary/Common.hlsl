@@ -17,6 +17,7 @@
 
 //这里面包含了下面注释的两个方法 TransformObjectToWorld 和 TransformWorldToHClip
 // Packages/com.unity.render-pipelines.core/ShaderLibrary/SpaceTransforms.hlsl
+#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/UnityInstancing.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/SpaceTransforms.hlsl"
 
 // float3 TransformObjectToWorld (float3 positionOS) {
