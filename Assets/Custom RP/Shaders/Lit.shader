@@ -22,6 +22,7 @@ Shader "Custom RP/Lit" {
 			ZWrite [_ZWrite]
 
             HLSLPROGRAM
+			#pragma target 3.5 //OpenGLES2.0不支持可变长度的循环，所以光照那里for循环注定不能支持2.0
 			#include "LitPass.hlsl"
 			#pragma shader_feature _CLIPPING
 			#pragma multi_compile_instancing

@@ -30,7 +30,7 @@ public class Lighting {
 		buffer.Clear();
 	}
 	
-	void SetupDirectionalLight (int index, VisibleLight visibleLight) {
+	void SetupDirectionalLight (int index, ref VisibleLight visibleLight) {
 		dirLightColors[index] = visibleLight.finalColor;
         //光照方向是通过VisibleLight.LocakToWorldMatrix属性来获取的，该矩阵的第三列即为光源的前向向量，需要取反
 		dirLightDirections[index] = -visibleLight.localToWorldMatrix.GetColumn(2);
@@ -38,5 +38,23 @@ public class Lighting {
 
     void SetupLights () {
         NativeArray<VisibleLight> visibleLights = cullingResults.visibleLights;
+
+		int dirLightCount = 0;
+
+		for (int i = 0; i < visibleLights.Length; i++) {
+			VisibleLight visibleLight = visibleLights[i];
+			if (visibleLight.lightType == LightType.Directional){
+				//VisibleLight结构体比较大，改用ref 传递引用而不是值，能省下值传递生成副本的开销
+				SetupDirectionalLight(i, ref visibleLight);
+				//设置限制
+				if (dirLightCount >= maxDirLightCount) {
+					break;
+				}
+			}
+		}
+
+		buffer.SetGlobalInt(dirLightCountId, visibleLights.Length);
+		buffer.SetGlobalVectorArray(dirLightColorsId, dirLightColors);
+		buffer.SetGlobalVectorArray(dirLightDirectionsId, dirLightDirections);
     }
 }
