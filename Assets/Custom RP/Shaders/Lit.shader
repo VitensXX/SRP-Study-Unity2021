@@ -10,6 +10,7 @@ Shader "Custom RP/Lit" {
 		[Enum(Off, 0, On, 1)] _ZWrite ("Z Write", Float) = 1
 		_Metallic ("Metallic", Range(0, 1)) = 0
 		_Smoothness ("Smoothness", Range(0, 1)) = 0.5
+		[Toggle(_PREMULTIPLY_ALPHA)] _PremulAlpha ("Premultiply Alpha", Float) = 0
 	}
 	
 	SubShader {
@@ -27,10 +28,13 @@ Shader "Custom RP/Lit" {
 			#pragma target 3.5 //OpenGLES2.0不支持可变长度的循环，所以光照那里for循环注定不能支持2.0
 			#include "LitPass.hlsl"
 			#pragma shader_feature _CLIPPING
+			#pragma shader_feature _PREMULTIPLY_ALPHA
 			#pragma multi_compile_instancing
 			#pragma vertex LitPassVertex
 			#pragma fragment LitPassFragment
 			ENDHLSL
         }
 	}
+
+	CustomEditor "CustomShaderGUI"
 }
