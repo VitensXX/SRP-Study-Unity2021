@@ -14,7 +14,7 @@ public partial class CameraRenderer
 
     Lighting lighting = new Lighting();
     
-    public void Render(ScriptableRenderContext context, Camera camera, bool useDynamicBatching, bool useGPUInstancing){
+    public void Render(ScriptableRenderContext context, Camera camera, bool useDynamicBatching, bool useGPUInstancing, ShadowSettings shadowSettings){
         this.context = context;
         this.camera = camera;
 
@@ -22,15 +22,19 @@ public partial class CameraRenderer
         PrepareBuffer();
         PrepareForSceneWindow();
 
-        if(!Cull()){
+        if(!Cull(shadowSettings.maxDistance)){
             return;
         }
 
+        buffer.BeginSample(SampleName);
+		ExecuteBuffer();
+        lighting.Setup(context, cullingResults, shadowSettings);
+        buffer.EndSample(SampleName);
         Setup();
-        lighting.Setup(context, cullingResults);
         DrawVisibleGeometry(useDynamicBatching, useGPUInstancing);
         DrawUnsupportedShaders();
         DrawGizmos();
+        lighting.Cleanup();
         Submit();
 	}
 
@@ -86,9 +90,12 @@ public partial class CameraRenderer
 	}
 
     CullingResults cullingResults;
-    bool Cull () {
+    bool Cull (float maxShadowDistance) {
 		ScriptableCullingParameters p;
 		if (camera.TryGetCullingParameters(out p)) {
+            //It doesn't make sense to render shadows that are further away than the camera can see, 
+            //so take the minimum of the max shadow distance and the camera's far clip plane.
+            p.shadowDistance = Mathf.Min(maxShadowDistance, camera.farClipPlane);
             cullingResults = context.Cull(ref p);
 			return true;
 		}

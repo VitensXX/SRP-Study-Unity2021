@@ -11,20 +11,24 @@ public class Lighting {
     static int dirLightCountId = Shader.PropertyToID("_DirectionalLightCount");
     static int dirLightColorsId = Shader.PropertyToID("_DirectionalLightColors");
     static int dirLightDirectionsId = Shader.PropertyToID("_DirectionalLightDirections");
+	static int dirLightShadowDataId = Shader.PropertyToID("_DirectionalLightShadowData");
     static Vector4[] dirLightColors = new Vector4[maxDirLightCount];
 	static Vector4[] dirLightDirections = new Vector4[maxDirLightCount];
+	static Vector4[] dirLightShadowData = new Vector4[maxDirLightCount];
 
 	CommandBuffer buffer = new CommandBuffer {
 		name = bufferName
 	};
 	
     CullingResults cullingResults;
+	Shadows shadows = new Shadows();
 
-	public void Setup (ScriptableRenderContext context, CullingResults cullingResults) {
+	public void Setup (ScriptableRenderContext context, CullingResults cullingResults, ShadowSettings shadowSettings) {
         this.cullingResults = cullingResults;
 		buffer.BeginSample(bufferName);
-		// SetupDirectionalLight();
+		shadows.Setup(context, cullingResults, shadowSettings);
         SetupLights();
+		shadows.Render();
 		buffer.EndSample(bufferName);
 		context.ExecuteCommandBuffer(buffer);
 		buffer.Clear();
@@ -34,6 +38,7 @@ public class Lighting {
 		dirLightColors[index] = visibleLight.finalColor;
         //光照方向是通过VisibleLight.LocakToWorldMatrix属性来获取的，该矩阵的第三列即为光源的前向向量，需要取反
 		dirLightDirections[index] = -visibleLight.localToWorldMatrix.GetColumn(2);
+		dirLightShadowData[index] = shadows.ReserveDirectionalShadows(visibleLight.light, index);
 	}
 
     void SetupLights () {
@@ -56,5 +61,10 @@ public class Lighting {
 		buffer.SetGlobalInt(dirLightCountId, visibleLights.Length);
 		buffer.SetGlobalVectorArray(dirLightColorsId, dirLightColors);
 		buffer.SetGlobalVectorArray(dirLightDirectionsId, dirLightDirections);
+		buffer.SetGlobalVectorArray(dirLightShadowDataId, dirLightShadowData);
     }
+
+	public void Cleanup () {
+		shadows.Cleanup();
+	}
 }
