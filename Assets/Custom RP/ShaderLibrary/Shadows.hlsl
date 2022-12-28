@@ -14,8 +14,46 @@ TEXTURE2D_SHADOW(_DirectionalShadowAtlas);
 SAMPLER_CMP(SHADOW_SAMPLER);
 
 CBUFFER_START(_CustomShadows)
+	int _CascadeCount;
+	float4 _CascadeCullingSpheres[MAX_CASCADE_COUNT];
 	float4x4 _DirectionalShadowMatrices[MAX_SHADOWED_DIRECTIONAL_LIGHT_COUNT * MAX_CASCADE_COUNT];
+	// float _ShadowDistance;
+	float4 _ShadowDistanceFade;
 CBUFFER_END
+
+//阴影数据
+struct ShadowData {
+	int cascadeIndex;
+	float strength;
+};
+
+float FadedShadowStrength (float distance, float scale, float fade) {
+	return saturate((1.0 - distance * scale) * fade);
+}
+
+//得到世界空间的表面阴影数据
+ShadowData GetShadowData (Surface surfaceWS) {
+	ShadowData data;
+	data.strength = FadedShadowStrength(surfaceWS.depth, _ShadowDistanceFade.x, _ShadowDistanceFade.y);
+	int i;
+	for (i = 0; i < _CascadeCount; i++) {
+		float4 sphere = _CascadeCullingSpheres[i];
+		float distanceSqr = DistanceSquared(surfaceWS.position, sphere.xyz);
+		if (distanceSqr < sphere.w) {
+			//如果绘制在最后一个级联的范围中
+			if (i == _CascadeCount - 1) {
+				data.strength *= FadedShadowStrength(distanceSqr, 1.0 / sphere.w, _ShadowDistanceFade.z);
+			}
+			break;
+		}
+	}
+	//超过了最后一个最大的级联范围，视为没有阴影了，不需要采样阴影
+	if (i == _CascadeCount) {
+		data.strength = 0.0;
+	}
+	data.cascadeIndex = i;
+	return data;
+}
 
 struct DirectionalShadowData {
 	float strength;

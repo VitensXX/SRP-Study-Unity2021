@@ -8,6 +8,11 @@ public class Shadows {
 	const string bufferName = "Shadows";
     static int dirShadowAtlasId = Shader.PropertyToID("_DirectionalShadowAtlas");
 	static int dirShadowMatricesId = Shader.PropertyToID("_DirectionalShadowMatrices");
+	static int cascadeCountId = Shader.PropertyToID("_CascadeCount");
+	static int cascadeCullingSpheresId = Shader.PropertyToID("_CascadeCullingSpheres");
+	// static int shadowDistanceId = Shader.PropertyToID("_ShadowDistance");
+	static int shadowDistanceFadeId = Shader.PropertyToID("_ShadowDistanceFade");
+	static Vector4[] cascadeCullingSpheres = new Vector4[maxCascades];//xyz:pos  w:半径
 	static Matrix4x4[] dirShadowMatrices = new Matrix4x4[maxShadowedDirectionalLightCount * maxCascades];
 
 	CommandBuffer buffer = new CommandBuffer {
@@ -76,7 +81,12 @@ public class Shadows {
 			RenderDirectionalShadows(i, split, tileSize);
 		}
 		
+		buffer.SetGlobalInt(cascadeCountId, settings.directional.cascadeCount);
+		buffer.SetGlobalVectorArray(cascadeCullingSpheresId, cascadeCullingSpheres);
 		buffer.SetGlobalMatrixArray(dirShadowMatricesId, dirShadowMatrices);
+		// buffer.SetGlobalFloat(shadowDistanceId, settings.maxDistance);
+		float f = 1f - settings.directional.cascadeFade;
+		buffer.SetGlobalVector(shadowDistanceFadeId, new Vector4(1f / settings.maxDistance, 1f / settings.distanceFade, 1f / (1f - f * f)));
 		buffer.EndSample(bufferName);
 		ExecuteBuffer();
     }
@@ -95,6 +105,13 @@ public class Shadows {
 				out Matrix4x4 viewMatrix, out Matrix4x4 projectionMatrix,
 				out ShadowSplitData splitData
 			);
+			//得到第一个光源的包围球数据
+			if (index == 0) {
+				Vector4 cullingSphere = splitData.cullingSphere;
+				//shader中通过距离的平方来判断是否在包围球中，这里提前将半径的平方存起来
+				cullingSphere.w *= cullingSphere.w;
+				cascadeCullingSpheres[i] = cullingSphere;
+			}
 			shadowSettings.splitData = splitData;
 			int tileIndex = tileOffset + i;
 			//得到世界空间到灯光空间的转换矩阵
@@ -105,8 +122,11 @@ public class Shadows {
 			);
 			// SetTileViewport(index, split, tileSize);
 			buffer.SetViewProjectionMatrices(viewMatrix, projectionMatrix);
+			// buffer.SetGlobalDepthBias(500000f, 0f);
+			// buffer.SetGlobalDepthBias(0, 3f);
 			ExecuteBuffer();
 			context.DrawShadows(ref shadowSettings);
+			// buffer.SetGlobalDepthBias(0f, 0f);
 		}
     }
 
