@@ -26,6 +26,7 @@ DirectionalShadowData GetDirectionalShadowData (int lightIndex, ShadowData shado
 	DirectionalShadowData data;
 	data.strength = _DirectionalLightShadowData[lightIndex].x * shadowData.strength;
 	data.tileIndex = _DirectionalLightShadowData[lightIndex].y + shadowData.cascadeIndex;
+	data.normalBias = _DirectionalLightShadowData[lightIndex].z;
 	return data;
 }
 
@@ -34,7 +35,7 @@ Light GetDirectionalLight (int index, Surface surfaceWS, ShadowData shadowData) 
 	light.color = _DirectionalLightColors[index].rgb;
 	light.direction = _DirectionalLightDirections[index].xyz;
 	DirectionalShadowData dirShadowData = GetDirectionalShadowData(index, shadowData);
-	light.attenuation = GetDirectionalShadowAttenuation(dirShadowData, surfaceWS);
+	light.attenuation = GetDirectionalShadowAttenuation(dirShadowData, shadowData, surfaceWS);
 	// 这一步操作可以只管的看到级联阴影区域
 	// light.attenuation = shadowData.cascadeIndex * 0.25; 
 	return light;
