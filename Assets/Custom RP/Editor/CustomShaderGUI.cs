@@ -15,7 +15,6 @@ public class CustomShaderGUI : ShaderGUI {
         editor = materialEditor;
 		materials = materialEditor.targets;
 		this.properties = properties;
-
         EditorGUILayout.Space();
 		showPresets = EditorGUILayout.Foldout(showPresets, "Presets", true);
 		if (showPresets) {
@@ -135,6 +134,19 @@ public class CustomShaderGUI : ShaderGUI {
 			DstBlend = BlendMode.OneMinusSrcAlpha;
 			ZWrite = false;
 			RenderQueue = RenderQueue.Transparent;
+		}
+	}
+
+	enum ShadowMode {
+		On, Clip, Dither, Off
+	}
+
+	ShadowMode Shadows {
+		set {
+			if (SetProperty("_Shadows", (float)value)) {
+				SetKeyword("_SHADOWS_CLIP", value == ShadowMode.Clip);
+				SetKeyword("_SHADOWS_DITHER", value == ShadowMode.Dither);
+			}
 		}
 	}
 }
