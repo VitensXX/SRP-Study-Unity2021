@@ -8,13 +8,15 @@ public partial class CameraRenderer
 
     const string bufferName = "Render Camera";
 
-	CommandBuffer buffer = new CommandBuffer {
-		name = bufferName
-	};
+    CommandBuffer buffer = new CommandBuffer
+    {
+        name = bufferName
+    };
 
     Lighting lighting = new Lighting();
-    
-    public void Render(ScriptableRenderContext context, Camera camera, bool useDynamicBatching, bool useGPUInstancing, ShadowSettings shadowSettings){
+
+    public void Render(ScriptableRenderContext context, Camera camera, bool useDynamicBatching, bool useGPUInstancing, ShadowSettings shadowSettings)
+    {
         this.context = context;
         this.camera = camera;
 
@@ -22,12 +24,13 @@ public partial class CameraRenderer
         PrepareBuffer();
         PrepareForSceneWindow();
 
-        if(!Cull(shadowSettings.maxDistance)){
+        if (!Cull(shadowSettings.maxDistance))
+        {
             return;
         }
 
         buffer.BeginSample(SampleName);
-		ExecuteBuffer();
+        ExecuteBuffer();
         lighting.Setup(context, cullingResults, shadowSettings);
         buffer.EndSample(SampleName);
         Setup();
@@ -36,71 +39,79 @@ public partial class CameraRenderer
         DrawGizmos();
         lighting.Cleanup();
         Submit();
-	}
+    }
 
-    void Setup () {
-		context.SetupCameraProperties(camera);
+    void Setup()
+    {
+        context.SetupCameraProperties(camera);
         //相机的clear flags
         CameraClearFlags flags = camera.clearFlags;
-        buffer.ClearRenderTarget(flags <= CameraClearFlags.Depth, flags <= CameraClearFlags.Color, 
+        buffer.ClearRenderTarget(flags <= CameraClearFlags.Depth, flags <= CameraClearFlags.Color,
             flags == CameraClearFlags.Color ? camera.backgroundColor.linear : Color.clear);
         buffer.BeginSample(SampleName);
         ExecuteBuffer();
-	}
+    }
 
     static ShaderTagId unlitShaderTagId = new ShaderTagId("SRPDefaultUnlit");
     static ShaderTagId litShaderTagId = new ShaderTagId("CustomLit");
-    void DrawVisibleGeometry (bool useDynamicBatching, bool useGPUInstancing) {
-        var sortingSettings = new SortingSettings(camera){
+    void DrawVisibleGeometry(bool useDynamicBatching, bool useGPUInstancing)
+    {
+        var sortingSettings = new SortingSettings(camera)
+        {
             criteria = SortingCriteria.CommonOpaque
         };
-        var drawingSettings = new DrawingSettings(unlitShaderTagId, sortingSettings){
+        var drawingSettings = new DrawingSettings(unlitShaderTagId, sortingSettings)
+        {
             enableDynamicBatching = useDynamicBatching,
-			enableInstancing = useGPUInstancing,
-            perObjectData = PerObjectData.Lightmaps
+            enableInstancing = useGPUInstancing,
+            perObjectData = PerObjectData.Lightmaps | PerObjectData.LightProbe | PerObjectData.LightProbeProxyVolume
         };
         drawingSettings.SetShaderPassName(1, litShaderTagId);
-		var filteringSettings = new FilteringSettings(RenderQueueRange.opaque);
+        var filteringSettings = new FilteringSettings(RenderQueueRange.opaque);
         //绘制不透明物体
-		context.DrawRenderers(
-			cullingResults, ref drawingSettings, ref filteringSettings
-		);
+        context.DrawRenderers(
+            cullingResults, ref drawingSettings, ref filteringSettings
+        );
 
         //绘制天空盒
-		context.DrawSkybox(camera);
+        context.DrawSkybox(camera);
 
         sortingSettings.criteria = SortingCriteria.CommonTransparent;
-		drawingSettings.sortingSettings = sortingSettings;
-		filteringSettings.renderQueueRange = RenderQueueRange.transparent;
+        drawingSettings.sortingSettings = sortingSettings;
+        filteringSettings.renderQueueRange = RenderQueueRange.transparent;
         //绘制透明物体
-		context.DrawRenderers(
-			cullingResults, ref drawingSettings, ref filteringSettings
-		);
-	}
+        context.DrawRenderers(
+            cullingResults, ref drawingSettings, ref filteringSettings
+        );
+    }
 
 
-     void Submit () {
+    void Submit()
+    {
         buffer.EndSample(SampleName);
         ExecuteBuffer();
-		context.Submit();
-	}
+        context.Submit();
+    }
 
-    void ExecuteBuffer () {
-		context.ExecuteCommandBuffer(buffer);
-		buffer.Clear();
-	}
+    void ExecuteBuffer()
+    {
+        context.ExecuteCommandBuffer(buffer);
+        buffer.Clear();
+    }
 
     CullingResults cullingResults;
-    bool Cull (float maxShadowDistance) {
-		ScriptableCullingParameters p;
-		if (camera.TryGetCullingParameters(out p)) {
+    bool Cull(float maxShadowDistance)
+    {
+        ScriptableCullingParameters p;
+        if (camera.TryGetCullingParameters(out p))
+        {
             //It doesn't make sense to render shadows that are further away than the camera can see, 
             //so take the minimum of the max shadow distance and the camera's far clip plane.
             p.shadowDistance = Mathf.Min(maxShadowDistance, camera.farClipPlane);
             cullingResults = context.Cull(ref p);
-			return true;
-		}
-		return false;
-	}
+            return true;
+        }
+        return false;
+    }
 
 }
