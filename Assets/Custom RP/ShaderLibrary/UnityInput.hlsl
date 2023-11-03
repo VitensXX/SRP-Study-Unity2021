@@ -8,6 +8,9 @@ CBUFFER_START(UnityPerDraw)
     float4 unity_LODFade;
     //这个矩阵包含一些再这里我们不需要的转换信息
     real4 unity_WorldTransformParams;
+
+    //遮蔽探针（Occlusion Probe)，用于动态物体的ShadowMask数据获取
+    float4 unity_ProbesOcclusion;
     
     float4 unity_LightmapST;
 	float4 unity_DynamicLightmapST;
