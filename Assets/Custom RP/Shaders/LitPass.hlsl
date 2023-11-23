@@ -61,8 +61,17 @@ Varyings LitPassVertex (Attributes input){
 	return output;
 }
 
+void ClipLOD (float2 positionCS, float fade) {
+	#if defined(LOD_FADE_CROSSFADE)
+		//float dither = (positionCS.y % 32) / 32; //条状的过渡
+		float dither = InterleavedGradientNoise(positionCS.xy, 0);
+		clip(fade + (fade < 0.0 ? dither : -dither));
+	#endif
+}
+
 float4 LitPassFragment (Varyings input) : SV_TARGET {
 	UNITY_SETUP_INSTANCE_ID(input);
+	ClipLOD(input.positionCS.xy, unity_LODFade.x);
 	//float4 baseMap = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.baseUV);
 	//float4 baseColor = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseColor);
 	//float4 base = baseMap * baseColor;
@@ -87,6 +96,7 @@ float4 LitPassFragment (Varyings input) : SV_TARGET {
 	surface.alpha = base.a;
 	surface.metallic = GetMetallic(input.baseUV);
 	surface.smoothness = GetSmoothness(input.baseUV);
+	surface.fresnelStrength = GetFresnel(input.baseUV);
 	//计算抖动值
 	surface.dither = InterleavedGradientNoise(input.positionCS.xy, 0);
 	#if defined(_PREMULTIPLY_ALPHA)
@@ -96,7 +106,7 @@ float4 LitPassFragment (Varyings input) : SV_TARGET {
 	#endif
 	
 	//获取全局光照
-	GI gi = GetGI(GI_FRAGMENT_DATA(input), surface);
+	GI gi = GetGI(GI_FRAGMENT_DATA(input), surface, brdf);
 	float3 color = GetLighting(surface, brdf, gi);
 	color += GetEmission(input.baseUV);
 	return float4(color, surface.alpha);

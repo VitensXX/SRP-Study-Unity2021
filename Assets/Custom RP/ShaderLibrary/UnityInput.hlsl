@@ -11,6 +11,7 @@ CBUFFER_START(UnityPerDraw)
 
     //遮蔽探针（Occlusion Probe)，用于动态物体的ShadowMask数据获取
     float4 unity_ProbesOcclusion;
+    float4 unity_SpecCube0_HDR;
     
     float4 unity_LightmapST;
 	float4 unity_DynamicLightmapST;
