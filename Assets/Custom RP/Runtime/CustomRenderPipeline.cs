@@ -1,28 +1,32 @@
 using UnityEngine;
 using UnityEngine.Rendering;
 
-public class CustomRenderPipeline : RenderPipeline
+public partial class CustomRenderPipeline : RenderPipeline
 {
-    bool useDynamicBatching, useGPUInstancing;
+    bool useDynamicBatching, useGPUInstancing, useLightsPerObject;
     ShadowSettings shadowSettings;
 
     CameraRenderer renderer = new CameraRenderer();
 
-    public CustomRenderPipeline (bool useDynamicBatching, bool useGPUInstancing, bool useSRPBatcher, ShadowSettings shadowSettings) {
+    public CustomRenderPipeline(bool useDynamicBatching, bool useGPUInstancing, bool useSRPBatcher, bool useLightsPerObject, ShadowSettings shadowSettings)
+    {
         this.useDynamicBatching = useDynamicBatching;
-		this.useGPUInstancing = useGPUInstancing;
+        this.useGPUInstancing = useGPUInstancing;
         this.shadowSettings = shadowSettings;
-		GraphicsSettings.useScriptableRenderPipelineBatching = useSRPBatcher;
+        this.useLightsPerObject = useLightsPerObject;
+        GraphicsSettings.useScriptableRenderPipelineBatching = useSRPBatcher;
         //灯光使用线性强度
         GraphicsSettings.lightsUseLinearIntensity = true;
-	}
-    
+
+        InitializeForEditor();
+    }
+
     protected override void Render(ScriptableRenderContext context, Camera[] cameras)
     {
         int length = cameras.Length;
         for (int i = 0; i < length; i++)
         {
-            renderer.Render(context, cameras[i], useDynamicBatching, useGPUInstancing, shadowSettings);
+            renderer.Render(context, cameras[i], useDynamicBatching, useGPUInstancing, useLightsPerObject, shadowSettings);
         }
     }
 }
