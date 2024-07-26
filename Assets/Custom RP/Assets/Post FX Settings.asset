@@ -23,5 +23,11 @@ MonoBehaviour:
     fadeFireflies: 1
     mode: 1
     scatter: 0.517
+  colorAdjustments:
+    postExposure: 0
+    contrast: 50
+    colorFilter: {r: 1, g: 1, b: 1, a: 1}
+    hueShift: 0
+    saturation: 0
   toneMapping:
     mode: 0
