@@ -4,6 +4,8 @@ using System;
 [CreateAssetMenu(menuName = "Rendering/Custom Post FX Settings")]
 public class PostFXSettings : ScriptableObject
 {
+    public bool enable = true;
+
     [SerializeField]
     Shader shader = default;
 

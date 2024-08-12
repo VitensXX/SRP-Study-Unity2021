@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: abce29e4afab5f243adc5816c24cd851, type: 3}
-  m_Name: Post FX Settings
+  m_Name: Post FX Settings  Test
   m_EditorClassIdentifier: 
   enable: 1
   shader: {fileID: 4800000, guid: 99c5f01e7708a0940bea8f8b574c52df, type: 3}
@@ -31,7 +31,7 @@ MonoBehaviour:
     hueShift: 0
     saturation: 0
   whiteBalance:
-    temperature: 34.6
+    temperature: -100
     tint: 0
   splitToning:
     shadows: {r: 0.5566038, g: 0.5566038, b: 0.5566038, a: 1}

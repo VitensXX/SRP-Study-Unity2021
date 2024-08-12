@@ -16,14 +16,23 @@ public partial class CameraRenderer
     Lighting lighting = new Lighting();
     PostFXStack postFXStack = new PostFXStack();
     bool useHDR;
-    int colorLUTResolution;
+    // int colorLUTResolution;
+    static CameraSettings defaultCameraSettings = new CameraSettings();
 
     public void Render(ScriptableRenderContext context, Camera camera, bool allowHDR, bool useDynamicBatching, bool useGPUInstancing,
         bool useLightsPerObject, ShadowSettings shadowSettings, PostFXSettings postFXSettings, int colorLUTResolution)
     {
         this.context = context;
         this.camera = camera;
-        this.colorLUTResolution = colorLUTResolution;
+
+        var crpCamera = camera.GetComponent<CustomRenderPipelineCamera>();
+        CameraSettings cameraSettings = crpCamera ? crpCamera.Settings : defaultCameraSettings;
+        // this.colorLUTResolution = colorLUTResolution;
+
+        if (cameraSettings.overridePostFX)
+        {
+            postFXSettings = cameraSettings.postFXSettings;
+        }
 
         //设置命令缓冲区名字
         PrepareBuffer();
@@ -38,7 +47,7 @@ public partial class CameraRenderer
         buffer.BeginSample(SampleName);
         ExecuteBuffer();
         lighting.Setup(context, cullingResults, shadowSettings, useLightsPerObject);
-        postFXStack.Setup(context, camera, postFXSettings, useHDR, colorLUTResolution);
+        postFXStack.Setup(context, camera, postFXSettings, useHDR, colorLUTResolution, cameraSettings.finalBlendMode);
         buffer.EndSample(SampleName);
         Setup();
         DrawVisibleGeometry(useDynamicBatching, useGPUInstancing, useLightsPerObject);

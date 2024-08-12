@@ -16,9 +16,9 @@ MonoBehaviour:
   useDynamicBatching: 1
   useGPUInstancing: 1
   useSRPBatcher: 1
-  useLightsPerObject: 0
+  useLightsPerObject: 1
   shadows:
-    maxDistance: 26.02
+    maxDistance: 30
     distanceFade: 0.1
     directional:
       atlasSize: 512
