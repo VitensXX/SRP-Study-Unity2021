@@ -977,6 +977,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   settings:
+    renderingLayerMask: -1
+    maskLights: 1
     overridePostFX: 0
     postFXSettings: {fileID: 0}
     finalBlendMode:
@@ -1080,6 +1082,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   settings:
+    renderingLayerMask: -1
+    maskLights: 0
     overridePostFX: 1
     postFXSettings: {fileID: 11400000, guid: 66b46241c388ce74e9368cf8c616c245, type: 2}
     finalBlendMode:
@@ -1249,7 +1253,7 @@ Light:
   m_CullingMask:
     serializedVersion: 2
     m_Bits: 39
-  m_RenderingLayerMask: 1
+  m_RenderingLayerMask: 2147483647
   m_Lightmapping: 1
   m_LightShadowCasterMode: 0
   m_AreaSize: {x: 1, y: 1}
@@ -1779,7 +1783,7 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
-  m_RenderingLayerMask: 1
+  m_RenderingLayerMask: 2
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: 8f68d51fa4f42fb43a7f02ea8ef3603f, type: 2}
@@ -2325,7 +2329,7 @@ Light:
   m_InnerSpotAngle: 21.80208
   m_CookieSize: 10
   m_Shadows:
-    m_Type: 0
+    m_Type: 1
     m_Resolution: -1
     m_CustomResolution: -1
     m_Strength: 1
@@ -2356,7 +2360,7 @@ Light:
   m_RenderMode: 0
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 39
+    m_Bits: 2147483647
   m_RenderingLayerMask: 1
   m_Lightmapping: 4
   m_LightShadowCasterMode: 0
@@ -2377,7 +2381,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1688760626}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.1841981, y: 1.17, z: 1.2}
+  m_LocalPosition: {x: -2.1841981, y: 2.04, z: 1.39}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

@@ -8,6 +8,7 @@ CBUFFER_START(UnityPerDraw)
     float4 unity_LODFade;
     //这个矩阵包含一些再这里我们不需要的转换信息
     real4 unity_WorldTransformParams;
+    float4 unity_RenderingLayer;
     real4 unity_LightData;
 	real4 unity_LightIndices[2];
 
