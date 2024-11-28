@@ -6,6 +6,14 @@ using LightType = UnityEngine.LightType;
 public partial class CustomRenderPipeline
 {
     partial void InitializeForEditor();
+    partial void DisposeForEditor();
+
+    protected override void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+        DisposeForEditor();
+        renderer.Dispose();
+    }
 
 #if UNITY_EDITOR
 
@@ -15,9 +23,9 @@ public partial class CustomRenderPipeline
         Lightmapping.SetDelegate(lightsDelegate);
     }
 
-    protected override void Dispose(bool disposing)
+    protected void DisposeForEditor(bool disposing)
     {
-        base.Dispose(disposing);
+        // base.Dispose(disposing);
         Lightmapping.ResetDelegate();
     }
 

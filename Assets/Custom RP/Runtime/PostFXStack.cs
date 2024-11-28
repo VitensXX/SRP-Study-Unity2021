@@ -18,7 +18,8 @@ public partial class PostFXStack
         ColorGradingACES,
         ColorGradingNeutral,
         ColorGradingReinhard,
-        Final
+        Final,
+        FinalRescale
     }
 
     public bool IsActive => settings != null;
@@ -49,9 +50,9 @@ public partial class PostFXStack
     bool useHDR;
     int colorLUTResolution;
     CameraSettings.FinalBlendMode finalBlendMode;
+    Vector2Int bufferSize;
 
-
-    public void Setup(ScriptableRenderContext context, Camera camera, PostFXSettings settings, bool useHDR,
+    public void Setup(ScriptableRenderContext context, Camera camera, Vector2Int bufferSize, PostFXSettings settings, bool useHDR,
         int colorLUTResolution, CameraSettings.FinalBlendMode finalBlendMode)
     {
         if (!settings.enable)
@@ -59,7 +60,7 @@ public partial class PostFXStack
             this.settings = null;
             return;
         }
-
+        this.bufferSize = bufferSize;
         this.finalBlendMode = finalBlendMode;
         this.useHDR = useHDR;
         this.context = context;
@@ -136,8 +137,19 @@ public partial class PostFXStack
     {
         // buffer.BeginSample("Bloom");
         PostFXSettings.BloomSettings bloom = settings.Bloom;
-        int width = camera.pixelWidth / 2;
-        int height = camera.pixelHeight / 2;
+        int width;
+        int height;
+
+        if (bloom.ignoreRenderScale)
+        {
+            width = camera.pixelWidth / 2;
+            height = camera.pixelHeight / 2;
+        }
+        else
+        {
+            width = bufferSize.x / 2;
+            height = bufferSize.y / 2;
+        }
 
         if (bloom.maxIterations == 0 || bloom.intensity <= 0f ||
              height < bloom.downscaleLimit * 2 || width < bloom.downscaleLimit * 2)
@@ -157,7 +169,7 @@ public partial class PostFXStack
         buffer.SetGlobalVector(bloomThresholdId, threshold);
 
         RenderTextureFormat format = useHDR ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default;
-        buffer.GetTemporaryRT(bloomPrefilterId, width, height, 0, FilterMode.Bilinear, format);
+        buffer.GetTemporaryRT(bloomPrefilterId, bufferSize.x, bufferSize.y, 0, FilterMode.Bilinear, format);
         Draw(sourceId, bloomPrefilterId, bloom.fadeFireflies ? Pass.BloomPrefilterFireflies : Pass.BloomPrefilter);
         width /= 2;
         height /= 2;

@@ -33,6 +33,11 @@ CBUFFER_START(UnityPerDraw)
 	float4x4 unity_ProbeVolumeWorldToObject;
 	float4 unity_ProbeVolumeSizeInv;
 	float4 unity_ProbeVolumeMin;
+
+    float4 unity_OrthoParams;
+    float4 _ProjectionParams;
+    float4 _ScreenParams;
+    float4 _ZBufferParams;
 CBUFFER_END
 
 float4x4 unity_MatrixVP;

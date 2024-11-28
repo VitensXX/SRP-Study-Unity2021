@@ -6,15 +6,18 @@ public partial class CustomRenderPipeline : RenderPipeline
     bool useDynamicBatching, useGPUInstancing, useLightsPerObject;
     ShadowSettings shadowSettings;
     PostFXSettings postFXSettings;
-    bool allowHDR;
+    // bool allowHDR;
+    CameraBufferSettings cameraBufferSettings;
 
-    CameraRenderer renderer = new CameraRenderer();
+    CameraRenderer renderer;
     int colorLUTResolution;
 
-    public CustomRenderPipeline(bool allowHDR, bool useDynamicBatching, bool useGPUInstancing, bool useSRPBatcher,
-        bool useLightsPerObject, ShadowSettings shadowSettings, PostFXSettings postFXSettings, int colorLUTResolution)
+    public CustomRenderPipeline(CameraBufferSettings cameraBufferSettings, bool useDynamicBatching, bool useGPUInstancing,
+        bool useSRPBatcher, bool useLightsPerObject, ShadowSettings shadowSettings, PostFXSettings postFXSettings,
+        int colorLUTResolution, Shader cameraRendererShader)
     {
-        this.allowHDR = allowHDR;
+        // this.allowHDR = allowHDR;
+        this.cameraBufferSettings = cameraBufferSettings;
         this.useDynamicBatching = useDynamicBatching;
         this.useGPUInstancing = useGPUInstancing;
         this.shadowSettings = shadowSettings;
@@ -26,6 +29,7 @@ public partial class CustomRenderPipeline : RenderPipeline
         GraphicsSettings.lightsUseLinearIntensity = true;
 
         InitializeForEditor();
+        renderer = new CameraRenderer(cameraRendererShader);
     }
 
     protected override void Render(ScriptableRenderContext context, Camera[] cameras)
@@ -33,7 +37,7 @@ public partial class CustomRenderPipeline : RenderPipeline
         int length = cameras.Length;
         for (int i = 0; i < length; i++)
         {
-            renderer.Render(context, cameras[i], allowHDR, useDynamicBatching, useGPUInstancing,
+            renderer.Render(context, cameras[i], cameraBufferSettings, useDynamicBatching, useGPUInstancing,
                 useLightsPerObject, shadowSettings, postFXSettings, colorLUTResolution);
         }
     }

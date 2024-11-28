@@ -5,7 +5,14 @@ using UnityEngine.Rendering;
 public partial class CustomRenderPipelineAsset : RenderPipelineAsset
 {
 	[SerializeField]
-	bool allowHDR = true, useDynamicBatching = true, useGPUInstancing = true, useSRPBatcher = true, useLightsPerObject = true;
+	CameraBufferSettings cameraBuffer = new CameraBufferSettings
+	{
+		allowHDR = true,
+		renderScale = 1f
+	};
+
+	[SerializeField]
+	bool useDynamicBatching = true, useGPUInstancing = true, useSRPBatcher = true, useLightsPerObject = true;
 
 	[SerializeField]
 	ShadowSettings shadows = default;
@@ -18,9 +25,13 @@ public partial class CustomRenderPipelineAsset : RenderPipelineAsset
 	[SerializeField]
 	ColorLUTResolution colorLUTResolution = ColorLUTResolution._32;
 
+	[SerializeField]
+	Shader cameraRendererShader = default;
+
 	protected override RenderPipeline CreatePipeline()
 	{
-		return new CustomRenderPipeline(allowHDR, useDynamicBatching, useGPUInstancing,
-			useSRPBatcher, useLightsPerObject, shadows, postFXSettings, (int)colorLUTResolution);
+		return new CustomRenderPipeline(cameraBuffer, useDynamicBatching, useGPUInstancing,
+			useSRPBatcher, useLightsPerObject, shadows, postFXSettings, (int)colorLUTResolution,
+			cameraRendererShader);
 	}
 }

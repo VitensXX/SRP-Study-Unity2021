@@ -21,7 +21,7 @@ struct Attributes {
 };
 
 struct Varyings {
-	float4 positionCS : SV_POSITION;
+	float4 positionCS_SS : SV_POSITION;
 	float2 baseUV : VAR_BASE_UV;
 	UNITY_VERTEX_INPUT_INSTANCE_ID
 };
@@ -33,14 +33,14 @@ Varyings ShadowCasterPassVertex (Attributes input) {
 	UNITY_SETUP_INSTANCE_ID(input);
 	UNITY_TRANSFER_INSTANCE_ID(input, output);
 	float3 positionWS = TransformObjectToWorld(input.positionOS);
-	output.positionCS = TransformWorldToHClip(positionWS);
+	output.positionCS_SS = TransformWorldToHClip(positionWS);
 
 	//解决阴影平坠问题（Shadow Pancaking）
 	if (_ShadowPancaking) {
 		#if UNITY_REVERSED_Z
-			output.positionCS.z = min(output.positionCS.z, output.positionCS.w * UNITY_NEAR_CLIP_VALUE);
+			output.positionCS_SS.z = min(output.positionCS_SS.z, output.positionCS_SS.w * UNITY_NEAR_CLIP_VALUE);
 		#else
-			output.positionCS.z = max(output.positionCS.z, output.positionCS.w * UNITY_NEAR_CLIP_VALUE);
+			output.positionCS_SS.z = max(output.positionCS_SS.z, output.positionCS_SS.w * UNITY_NEAR_CLIP_VALUE);
 		#endif
 	}
 
@@ -50,25 +50,26 @@ Varyings ShadowCasterPassVertex (Attributes input) {
 	return output;
 }
 
-void ClipLOD (float2 positionCS, float fade) {
+void ClipLOD (Fragment fragment, float fade) {
 	#if defined(LOD_FADE_CROSSFADE)
 		//float dither = (positionCS.y % 32) / 32; //条状的过渡
-		float dither = InterleavedGradientNoise(positionCS.xy, 0);
+		float dither = InterleavedGradientNoise(fragment.positionSS, 0);
 		clip(fade + (fade < 0.0 ? dither : -dither));
 	#endif
 }
 
 void ShadowCasterPassFragment (Varyings input) {
 	UNITY_SETUP_INSTANCE_ID(input);
-	ClipLOD(input.positionCS.xy, unity_LODFade.x);
 	//float4 baseMap = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.baseUV);
 	//float4 baseColor = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseColor);
 	//float4 base = baseMap * baseColor;
-	float4 base = GetBase(input.baseUV);
+	InputConfig config = GetInputConfig(input.positionCS_SS, input.baseUV);
+	ClipLOD(config.fragment, unity_LODFade.x);
+	float4 base = GetBase(config);
 	#if defined(_SHADOWS_CLIP)
-		clip(base.a - GetCutoff(input.baseUV));
+		clip(base.a - GetCutoff(config));
 	#elif defined(_SHADOWS_DITHER)
-		float dither = InterleavedGradientNoise(input.positionCS.xy, 0);
+		float dither = InterleavedGradientNoise(input.positionCS_SS.xy, 0);
 		clip(base.a - dither);
 	#endif
 }
